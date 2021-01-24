@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <style>
+      body {
+        background: #333;
+        font-size: 14px;
+        font-family: Consolas;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        zoom: 3;
+      }
+      .indent {
+        color: #ddd;
+      }
+      #pause-btn {
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="indent">
+      <canvas width="256" height="224"></canvas>
+      <div id="cam-coords"></div>
+      <div id="player-coords"></div>
+      <div id="world-coords"></div>
+      <button id="pause-btn">Pause</button>
+    </div>
+
+    <div style="display: none" id="image-dict">
+      <img src="img/groundTile.png" />
+      <img src="img/overworld.png" />
+      <img src="img/superMushroom.png" />
+      <img src="img/zombie.png" />
+      <!--
+      <img src="img/marioLuigiSpriteSheet.gif" />
+      <img src="img/1upMushroom.png" />
+      <img src="img/items.png" />
+      <img src="img/superZombie.png" />
+      <img src="img/tiles.png" />
+      <img src="img/zombieItems.png" />
+      <img src="img/zombieTransition.png" />
+      -->
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="animate.js"></script>
+    <script src="controls.js"></script>
+    <script src="item.js"></script>
+    <script src="camera.js"></script>
+    <script src="player.js"></script>
+    <script src="worldmap.js"></script>
+    <script src="index.js"></script>
+    <script>
+      FPS = 30;
+      INTERVAL = 1000 / FPS;
+      STEP = INTERVAL / 1000;
+      WORLD_HEIGHT = 224;
+      WORLD_LENGTH = 864;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        window.game = new Game();
+      });
+    </script>
+  </body>
+</html>
