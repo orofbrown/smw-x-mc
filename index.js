@@ -1,6 +1,15 @@
+deltaTime = 0;
+
 function Game() {
   let paused = false;
+  let lastTime = 0;
+
   const onKeyDown = (ev, ctrl) => {
+    if (ev.key === " " && ev.repeat) {
+      ctrl.jumpPress = false;
+      return;
+    }
+
     ctrl.keyDown(ev.key);
   };
 
@@ -8,7 +17,10 @@ function Game() {
     ctrl.keyUp(ev.key);
   };
 
-  const gameLoop = async () => {
+  const gameLoop = async (runningTime) => {
+    deltaTime = runningTime - lastTime;
+    lastTime = runningTime;
+
     this.map.update();
     await this.map.draw();
     if (!paused) {

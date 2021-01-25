@@ -8,29 +8,25 @@ const HALF_HEIGHT = Math.round(H / 2);
 const Y_PEAK = 50;
 
 /*
-00 to 11
-const MoveState = {
-  Idle: 0,
-  Walk: 1,
-  Run: 2,
-  xSprint: 3,
-}; (MSB)
+** MoveState
+  Idle:   0
+  Walk:   1
+  Run:    2
+  Sprint: 3
 
-00 to 10
-const JumpState = {
-  Grounded: 0,
-  Jumping: 1,
-  xFalling: 2,
-};
+** JumpState
+  Grounded: 0
+  Rising:   1
+  Falling:  2
 
-00 to 11
-const PowerUpState = {
-  None: 0,
-  Super: 1,
-  xFire: 2,
-  xFeather: 3,
-}; (LSB)
+** PowerUpState
+  None:    0,
+  Super:   1
+  Fire:    2
+  Feather: 3
 
+** Sprite State:
+(Moving | Jumping | PowerUp)
   *  M | J | P   R
   *  0   0   0   0 - idle, grounded, none
   *  1   0   0   4 - walk, grounded, none
@@ -39,9 +35,9 @@ const PowerUpState = {
   *  0   0   1   1 - idle, grounded, supe
   *  1   0   1   5 - walk, grounded, supe
   *  0   1   1   3 - idle,  jumping, supe
-  *  1   1   1   7 - walk,  jumping, supe
-  
-  Since 2,3,6 and 7 are all the same sprite, will repurpose 6 for falling
+  *  1   1   1   7 - walk,  jumping, supe  
+*Since 2,3,6 and 7 are all the same sprite, will repurpose 6 for falling
+
 */
 
 function Player({
@@ -55,8 +51,19 @@ function Player({
   const { w, h } = worldBounds;
 
   // Rounding because float values make the sprite fuzzy
-  this.FRAME_INC = Math.round(SPEED * STEP);
+  this.FRAME_INC_X = Math.round(SPEED * STEP);
+  this.FRAME_INC_Y = this.FRAME_INC_X * 0.5;
+  this.MAX_JUMP_PRESS = 20;
+  this.JUMP_FORCE = 2;
+  this.GRAVITY_FORCE = 3;
 
+  this.airborneState = {
+    falling: false,
+    gravityDecay: this.FRAME_INC_Y,
+    jumpForce: this.JUMP_FORCE,
+    jumpPressCount: 0,
+    rising: false,
+  };
   this.ctrl = controls;
   this.ctx = canvasContext;
   this.intervalId = -1;
@@ -78,38 +85,90 @@ function Player({
   this.isOnGround = () => this.y + HALF_HEIGHT > this.worldHeight;
   this.isAtCeiling = () => this.y - HALF_HEIGHT < 0;
   this.isAtEdge = () => this.isAtLeftEdge() || this.isAtRightEdge();
+  this.isAirborne = () =>
+    this.airborneState.rising || this.airborneState.falling;
+
+  this.shouldResetSpriteState = () =>
+    (!(
+      this.ctrl.leftPress ||
+      this.ctrl.upPress ||
+      this.ctrl.rightPress ||
+      this.ctrl.downPress
+    ) ||
+      this.isAtEdge() ||
+      (this.ctrl.leftPress && this.ctrl.rightPress)) &&
+    !this.isAirborne();
 }
 
 Player.prototype.update = function () {
-  const { leftPress, upPress, rightPress, downPress } = this.ctrl;
-  let nextState = 0;
+  const { leftPress, upPress, rightPress, downPress, jumpPress } = this.ctrl;
 
+  // Sprite State
+  let nextState = 0;
   if (leftPress) {
     nextState = 0b100;
     this.sprite.direction = -1;
-    this.x -= this.FRAME_INC;
+    this.x -= this.FRAME_INC_X;
   }
   if (rightPress) {
     nextState = 0b100;
     this.sprite.direction = 1;
-    this.x += this.FRAME_INC;
+    this.x += this.FRAME_INC_X;
   }
   // TODO: eventually will be looking up sprite
   if (upPress) {
     nextState = 0b010;
-    this.y -= this.FRAME_INC;
+    this.y -= this.FRAME_INC_X;
   }
   // TODO: eventually will be ducking sprite
   if (downPress) {
     nextState = 0b110;
-    this.y += this.FRAME_INC;
+    this.y += this.FRAME_INC_X;
   }
-  if (
-    !(leftPress || upPress || rightPress || downPress) ||
-    this.isAtEdge() ||
-    (leftPress && rightPress)
-  ) {
+  if (jumpPress && !this.isAirborne()) {
+    // TODO: make longer press = higher jump
+    // and debounce double jump press
+    nextState = 0b010;
+    this.airborneState.rising = true;
+  }
+  if (this.shouldResetSpriteState()) {
     nextState = this.resetSprite();
+  }
+
+  // Airborne State
+  const DT = deltaTime * 2;
+  let decayAmt = DT / 500;
+  if (this.airborneState.rising) {
+    this.airborneState.jumpPressCount += deltaTime / 500;
+
+    if (jumpPress) {
+      this.airborneState.jumpForce += 0.1;
+      decayAmt = DT / 750;
+    }
+
+    nextState = 0b010;
+    this.y = Math.round(
+      this.y - this.airborneState.gravityDecay * this.airborneState.jumpForce
+    );
+
+    // if (!jumpPress)
+    // this.airborneState.jumpPressCount)
+    this.airborneState.gravityDecay -= decayAmt;
+
+    if (this.airborneState.gravityDecay <= 0) {
+      this.ctrl.jumpPress = false;
+      this.airborneState.falling = true;
+      this.airborneState.rising = false;
+      this.airborneState.gravityDecay += decayAmt;
+    }
+  } else if (this.airborneState.falling) {
+    this.airborneState.jumpForce = this.GRAVITY_FORCE;
+    decayAmt = (deltaTime * 2) / 500;
+    nextState = 0b110;
+    this.y += Math.round(
+      this.airborneState.gravityDecay * this.airborneState.jumpForce * 0.75
+    );
+    this.airborneState.gravityDecay += decayAmt;
   }
 
   this.sprite.frameIdx =
@@ -178,6 +237,10 @@ Player.prototype.keepInWorld = function () {
   if (this.isOnGround()) {
     // Ground bc y = 0 is at top of world
     this.y = this.worldHeight - HALF_HEIGHT;
+    this.airborneState.falling = false;
+    this.airborneState.jumpForce = this.JUMP_FORCE;
+    this.airborneState.gravityDecay = this.FRAME_INC_Y;
+    this.airborneState.jumpPressCount = 0;
   }
 };
 
@@ -189,6 +252,8 @@ Player.prototype.resetSprite = function () {
 
   return this.sprite.state;
 };
+
+Player.prototype.jump = function () {};
 
 function getSpriteFrames(bitMask) {
   let frames = [{ x: 0, y: 0 }];

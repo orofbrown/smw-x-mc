@@ -37,10 +37,11 @@ function WorldMap(canvasSize, controls) {
   this.context = document.querySelector("canvas").getContext("2d");
   this.player = new Player({
     canvasContext: this.context,
-    startingWorldPos: { x: 0, y: 0 },
+    startingWorldPos: { x: 96, y: 182 },
     controls,
     viewCoords: { x: 0, y: 0 }, // TODO: not used atm
-    worldBounds: { w: WORLD_LENGTH, h: WORLD_HEIGHT },
+    // NOTE: subtracts height of ground until colliders are added
+    worldBounds: { w: WORLD_LENGTH, h: WORLD_HEIGHT - 32 },
   });
   this.camera = new Camera({
     startingWorldPos: { x: 0, y: 0 },
