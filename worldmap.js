@@ -46,7 +46,7 @@ function WorldMap(canvasSize, controls) {
   this.camera = new Camera({
     startingWorldPos: { x: 0, y: 0 },
     viewportSize: { w: width, h: height },
-    worldBounds: { w: WORLD_LENGTH, h: WORLD_HEIGHT },
+    worldBounds: { w: WORLD_LENGTH, h: 320 },
   });
   this.camera.follow(this.player, width / 2, height / 2);
 }
@@ -73,7 +73,7 @@ async function drawBackground(img, context, vx, vy) {
   return new Promise((resolve, reject) => {
     context.save();
     context.globalCompositeOperation = "destination-over"; // everything over top of background
-
+    // console.log(vx, vy);
     for (let i = 0; i < 2; ++i) {
       context.drawImage(
         img,

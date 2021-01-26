@@ -15,7 +15,7 @@ const Axis = {
 
 function Camera({ startingWorldPos, viewportSize, worldBounds }) {
   const CAM_LEAD = 16;
-  this.x = startingWorldPos.x + CAM_LEAD;
+  this.x = startingWorldPos.x;
   this.y = startingWorldPos.y;
   let { w: vw, h: vh } = viewportSize;
   let { w: ww, h: wh } = worldBounds;
@@ -47,16 +47,8 @@ function Camera({ startingWorldPos, viewportSize, worldBounds }) {
     top: 0,
     width: ww,
     height: wh,
-    right: cam.x + ww,
-    bottom: cam.y + wh,
-    set: function (left, top, width, height) {
-      this.left = left;
-      this.top = top;
-      this.width = width || this.width;
-      this.height = height || this.height;
-      this.right = this.left + this.width;
-      this.bottom = this.top + this.height;
-    },
+    right: ww,
+    bottom: wh,
   };
 
   function calculateView(followedXorY, xOrYView, xOrYdeadZone, wOrHView) {
@@ -76,18 +68,17 @@ function Camera({ startingWorldPos, viewportSize, worldBounds }) {
       if (cameraView.right > worldRect.right) {
         this.x = worldRect.right - viewWidth;
       }
-      // TODO: fix this maybe
-      // if (cameraView.top < worldRect.top) {
-      //   this.y = worldRect.top;
-      // }
-      // if (cameraView.bottom > worldRect.bottom) {
-      //   this.y = worldRect.bottom - viewHeight;
-      // }
+      if (cameraView.top < worldRect.top) {
+        this.y = worldRect.top;
+      }
+      if (cameraView.bottom > worldRect.bottom) {
+        this.y = worldRect.bottom - viewHeight;
+      }
+      console.log("here", this.x, this.y);
     }
     document.querySelector("#cam-coords").innerText = `
     Camera VP: ${cameraView.left} ${cameraView.top} ${cameraView.right} ${cameraView.bottom}
     Camera XY: ${this.x} ${this.y}`;
-    document.querySelector("#player-coords").innerText = "";
 
     document.querySelector(
       "#world-coords"
@@ -103,9 +94,7 @@ function Camera({ startingWorldPos, viewportSize, worldBounds }) {
   this.update = () => {
     if (followed !== null) {
       if (axis == Axis.Horizontal || axis == Axis.Both) {
-        this.x =
-          calculateView(followed.x, this.x, xDeadZone, worldRect.left) +
-          CAM_LEAD;
+        this.x = calculateView(followed.x, this.x, xDeadZone, worldRect.left);
       }
       if (axis == Axis.Vertical || axis == Axis.Both) {
         this.y = calculateView(followed.y, this.y, yDeadZone, worldRect.top);
