@@ -47,7 +47,7 @@ function Player({
   viewCoords,
   worldBounds,
 }) {
-  const { x: vx, y: vy } = viewCoords;
+  // const { x: vx, y: vy } = viewCoords;
   const { w, h } = worldBounds;
 
   // Rounding because float values make the sprite fuzzy
@@ -184,7 +184,7 @@ Player.prototype.draw = function (camX, camY) {
   // Using width/height div by 2 keeps coords centered on sprite
   // Will also leave small space between player and world borders
   const newX = (this.x - HALF_WIDTH - camX) * this.sprite.direction;
-  const newY = this.y - HALF_HEIGHT;
+  const newY = this.y - HALF_HEIGHT - camY;
   const destWidth = W * this.sprite.direction;
   const frame = this.sprite.frames[this.sprite.frameIdx];
 

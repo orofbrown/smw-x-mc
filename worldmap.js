@@ -37,18 +37,18 @@ function WorldMap(canvasSize, controls) {
   this.context = document.querySelector("canvas").getContext("2d");
   this.player = new Player({
     canvasContext: this.context,
-    startingWorldPos: { x: 96, y: 182 },
+    startingWorldPos: { x: 96, y: WORLD_HEIGHT },
     controls,
     viewCoords: { x: 0, y: 0 }, // TODO: not used atm
-    // NOTE: subtracts height of ground until colliders are added
-    worldBounds: { w: WORLD_LENGTH, h: WORLD_HEIGHT - 32 },
+    // TODO: subtracts magic value to keep player on ground until colliders are added
+    worldBounds: { w: WORLD_LENGTH, h: WORLD_HEIGHT },
   });
   this.camera = new Camera({
-    startingWorldPos: { x: 0, y: 0 },
-    viewportSize: { w: width, h: height },
-    worldBounds: { w: WORLD_LENGTH, h: 320 },
+    startingWorldPos: { x: 0, y: WORLD_HEIGHT },
+    viewportSize: { w: this.vWidth, h: this.vHeight },
+    worldBounds: { w: WORLD_LENGTH, h: WORLD_HEIGHT },
   });
-  this.camera.follow(this.player, width / 2, height / 2);
+  this.camera.follow(this.player, this.vWidth / 2, this.vHeight / 2);
 }
 
 WorldMap.prototype.update = function () {
@@ -72,17 +72,19 @@ WorldMap.prototype.draw = async function () {
 async function drawBackground(img, context, vx, vy) {
   return new Promise((resolve, reject) => {
     context.save();
-    context.globalCompositeOperation = "destination-over"; // everything over top of background
-    // console.log(vx, vy);
-    for (let i = 0; i < 2; ++i) {
+    context.globalCompositeOperation = "destination-over";
+    for (let i = 0; i < 1; ++i) {
+      // drawImage(src,
+      //    sx, sy, sw, sh,
+      //    dx, dy, dw, dh)
       context.drawImage(
         img,
-        0, //96
-        0, //192
+        0,
+        0,
         img.width,
         img.height,
         -vx + i * img.width,
-        -122 - vy,
+        16 - vy,
         img.width,
         img.height
       );
@@ -98,18 +100,17 @@ async function drawGround(img, context, vx, vy) {
   return new Promise((resolve, reject) => {
     context.save();
     context.globalCompositeOperation = "source-over";
-
-    for (let i = 0; i < WORLD_LENGTH / 27; ++i) {
+    for (let i = 0; i < 16; ++i) {
       context.drawImage(
         img,
         0,
         0,
         img.width,
         img.height,
-        32 * i - vx,
-        262 - vy,
-        32,
-        32
+        img.height * i - vx,
+        400 - vy,
+        img.height,
+        img.height
       );
     }
 
@@ -118,9 +119,9 @@ async function drawGround(img, context, vx, vy) {
   });
 }
 
-async function drawCourse(context, bg, ground, vx, vy) {
+async function drawCourse(context, bg, ground, camX, camY) {
   return Promise.all([
-    drawBackground(bg, context, vx, vy),
-    drawGround(ground, context, vx, vy),
+    drawBackground(bg, context, camX, camY),
+    drawGround(ground, context, camX, camY),
   ]);
 }

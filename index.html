@@ -12,13 +12,20 @@
       canvas {
         image-rendering: pixelated;
         image-rendering: crisp-edges;
-        /* zoom: 3; */
+        zoom: 3;
       }
       .indent {
         color: #ddd;
       }
       #pause-btn {
         margin-top: 8px;
+      }
+      #debug-box {
+        display: none;
+        border: 3px solid red;
+        height: 100px;
+        width: 100px;
+        position: absolute;
       }
     </style>
   </head>
@@ -46,6 +53,7 @@
       <img src="img/zombieTransition.png" />
       -->
     </div>
+    <div id="debug-box"></div>
 
     <script src="utils.js"></script>
     <script src="animate.js"></script>
@@ -59,8 +67,8 @@
       FPS = 30;
       INTERVAL = 1000 / FPS;
       STEP = INTERVAL / 1000;
-      WORLD_HEIGHT = 224;
-      WORLD_LENGTH = 864;
+      WORLD_HEIGHT = 432;
+      WORLD_LENGTH = 512;
 
       window.addEventListener("DOMContentLoaded", () => {
         window.game = new Game();

@@ -25,7 +25,7 @@ function Camera({ startingWorldPos, viewportSize, worldBounds }) {
   let followed = null;
   const cam = this;
 
-  let cameraView = {
+  this.cameraView = {
     left: cam.x,
     top: cam.y,
     width: vw,
@@ -60,24 +60,23 @@ function Camera({ startingWorldPos, viewportSize, worldBounds }) {
     return followedXorY;
   }
 
-  const keepInsideWorld = (worldRect, cameraView, viewHeight, viewWidth) => {
-    if (!within(worldRect, cameraView)) {
-      if (cameraView.left < worldRect.left) {
+  const keepInsideWorld = (worldRect) => {
+    if (!within(worldRect, this.cameraView)) {
+      if (this.cameraView.left < worldRect.left) {
         this.x = worldRect.left;
       }
-      if (cameraView.right > worldRect.right) {
-        this.x = worldRect.right - viewWidth;
+      if (this.cameraView.right > worldRect.right) {
+        this.x = worldRect.right - this.cameraView.width;
       }
-      if (cameraView.top < worldRect.top) {
+      if (this.cameraView.top < worldRect.top) {
         this.y = worldRect.top;
       }
-      if (cameraView.bottom > worldRect.bottom) {
-        this.y = worldRect.bottom - viewHeight;
+      if (this.cameraView.bottom > worldRect.bottom) {
+        this.y = worldRect.bottom - this.cameraView.height;
       }
-      console.log("here", this.x, this.y);
     }
     document.querySelector("#cam-coords").innerText = `
-    Camera VP: ${cameraView.left} ${cameraView.top} ${cameraView.right} ${cameraView.bottom}
+    Camera VP: ${this.cameraView.left} ${this.cameraView.top} ${this.cameraView.right} ${this.cameraView.bottom}
     Camera XY: ${this.x} ${this.y}`;
 
     document.querySelector(
@@ -100,8 +99,8 @@ function Camera({ startingWorldPos, viewportSize, worldBounds }) {
         this.y = calculateView(followed.y, this.y, yDeadZone, worldRect.top);
       }
 
-      cameraView.set(this.x, this.y);
-      keepInsideWorld(worldRect, cameraView, vh, vw);
+      this.cameraView.set(this.x, this.y);
+      keepInsideWorld(worldRect);
     }
   };
 }
