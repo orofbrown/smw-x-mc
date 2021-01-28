@@ -13,11 +13,11 @@ const Axis = {
   Both: 4,
 };
 
-function Camera({ startingWorldPos, viewportSize, worldBounds }) {
+function Camera(startingWorldPos, viewportSize, worldBounds) {
   const CAM_LEAD = 16;
   this.x = startingWorldPos.x;
   this.y = startingWorldPos.y;
-  let { w: vw, h: vh } = viewportSize;
+  let { width: vw, height: vh } = viewportSize;
   let { w: ww, h: wh } = worldBounds;
   let xDeadZone = 0,
     yDeadZone = 0;
@@ -101,6 +101,7 @@ function Camera({ startingWorldPos, viewportSize, worldBounds }) {
 
       this.cameraView.set(this.x, this.y);
       keepInsideWorld(worldRect);
+      console.log(this.cameraView);
     }
   };
 }

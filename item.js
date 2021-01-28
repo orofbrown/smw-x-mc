@@ -9,7 +9,7 @@ function Item() {
     // ctx.clearRect(0, 0, 224, 256);
     x -= 1;
     ctx.translate(x, y);
-    ctx.drawImage(mushroom, -6, -6);
+    ctx.drawImage(MUSHROOM, -6, -6);
 
     ctx.restore();
 

@@ -40,14 +40,7 @@ const Y_PEAK = 50;
 
 */
 
-function Player({
-  canvasContext,
-  startingWorldPos,
-  controls,
-  viewCoords,
-  worldBounds,
-}) {
-  // const { x: vx, y: vy } = viewCoords;
+function Player(startingWorldPos, controls, worldBounds) {
   const { w, h } = worldBounds;
 
   // Rounding because float values make the sprite fuzzy
@@ -65,13 +58,12 @@ function Player({
     rising: false,
   };
   this.ctrl = controls;
-  this.ctx = canvasContext;
   this.intervalId = -1;
   this.sprite = {
     direction: 1,
     frames: [{ x: 0, y: 0 }],
     frameIdx: 0,
-    img: playerSprite,
+    img: PLAYER_SPRITE,
     // TODO: add more states later
     state: 0,
   };
@@ -102,7 +94,7 @@ function Player({
 
 Player.prototype.update = function () {
   const { leftPress, upPress, rightPress, downPress, jumpPress } = this.ctrl;
-
+  console.log(leftPress, upPress, rightPress, downPress, jumpPress);
   // Sprite State
   let nextState = 0;
   if (leftPress) {
@@ -135,6 +127,7 @@ Player.prototype.update = function () {
     nextState = this.resetSprite();
   }
 
+  // TODO: jump needs to be higher
   // Airborne State
   const DT = deltaTime * 2;
   let decayAmt = DT / 500;
@@ -151,8 +144,6 @@ Player.prototype.update = function () {
       this.y - this.airborneState.gravityDecay * this.airborneState.jumpForce
     );
 
-    // if (!jumpPress)
-    // this.airborneState.jumpPressCount)
     this.airborneState.gravityDecay -= decayAmt;
 
     if (this.airborneState.gravityDecay <= 0) {
@@ -179,7 +170,7 @@ Player.prototype.update = function () {
   this.keepInWorld();
 };
 
-Player.prototype.draw = function (camX, camY) {
+Player.prototype.draw = function (ctx, camX, camY) {
   // Tying coords to camera coords prevents player from getting ahead of camera
   // Using width/height div by 2 keeps coords centered on sprite
   // Will also leave small space between player and world borders
@@ -188,11 +179,11 @@ Player.prototype.draw = function (camX, camY) {
   const destWidth = W * this.sprite.direction;
   const frame = this.sprite.frames[this.sprite.frameIdx];
 
-  this.ctx.save();
+  ctx.save();
 
-  this.ctx.scale(this.sprite.direction, 1);
-  this.ctx.globalCompositeOperation = "source-over"; // player over top of everything
-  this.ctx.drawImage(
+  ctx.scale(this.sprite.direction, 1);
+  ctx.globalCompositeOperation = "source-over"; // player over top of everything
+  ctx.drawImage(
     this.sprite.img,
     frame.x,
     frame.y,
@@ -204,7 +195,7 @@ Player.prototype.draw = function (camX, camY) {
     H
   );
 
-  this.ctx.restore();
+  ctx.restore();
 
   if (this.intervalId < 0 && this.sprite.frames.length > 1) {
     this.animate();

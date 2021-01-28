@@ -1,38 +1,70 @@
 deltaTime = 0;
 
-function Game() {
-  let paused = false;
-  let lastTime = 0;
+var Game = (function () {
+  const canvasSize = { width: 256, height: 224 };
+  var paused = false;
+  var lastTime = 0;
+  var camera = null;
+  var controls = null;
+  var map = null;
+  var player = null;
+  var renderer = null;
 
-  const onKeyDown = (ev, ctrl) => {
+  function end() {
+    stopKeyListeners();
+  }
+
+  async function gameLoop(runningTime) {
+    deltaTime = runningTime - lastTime;
+    lastTime = runningTime;
+
+    renderer.update();
+    await renderer.draw();
+    if (!paused) {
+      requestAnimationFrame(gameLoop);
+    }
+  }
+
+  function init(keyBindings) {
+    course = new Course(canvasSize, controls);
+    controls = new Controls(keyBindings);
+    player = new Player(
+      { x: 96, y: WORLD_HEIGHT },
+      controls,
+      // TODO: subtracts magic value to keep player on ground until colliders are added
+      { w: WORLD_LENGTH, h: WORLD_HEIGHT - 32 }
+    );
+    camera = new Camera({ x: 0, y: WORLD_HEIGHT }, canvasSize, {
+      w: WORLD_LENGTH,
+      h: WORLD_HEIGHT,
+    });
+    camera.follow(player, canvasSize.width / 2, canvasSize.height / 2);
+
+    renderer = new Renderer(
+      canvasSize.width,
+      canvasSize.height,
+      course,
+      camera,
+      player
+    );
+
+    startKeyListeners(controls);
+  }
+
+  function onKeyDown(ev, ctrl) {
     if (ev.key === " " && ev.repeat) {
       ctrl.jumpPress = false;
       return;
     }
 
     ctrl.keyDown(ev.key);
-  };
+  }
 
-  const onKeyUp = (ev, ctrl) => {
+  function onKeyUp(ev, ctrl) {
     ctrl.keyUp(ev.key);
-  };
+  }
 
-  const gameLoop = async (runningTime) => {
-    deltaTime = runningTime - lastTime;
-    lastTime = runningTime;
-
-    this.map.update();
-    await this.map.draw();
-    if (!paused) {
-      requestAnimationFrame(gameLoop);
-    }
-  };
-
-  const play = () => {
-    requestAnimationFrame(gameLoop);
-  };
-
-  const pause = () => {
+  function pause() {
     if (!paused) {
       paused = true;
       document.querySelector("#pause-btn").innerText = "Play";
@@ -41,7 +73,18 @@ function Game() {
       document.querySelector("#pause-btn").innerText = "Pause";
       play();
     }
-  };
+  }
+
+  function play() {
+    // TODO: is this right or just gameLoop?
+    requestAnimationFrame(gameLoop);
+  }
+
+  function start() {
+    document.querySelector("#pause-btn").addEventListener("click", pause);
+
+    play();
+  }
 
   function startKeyListeners(ctrl) {
     document.addEventListener("keydown", (ev) => onKeyDown(ev, ctrl));
@@ -53,36 +96,17 @@ function Game() {
     document.removeEventListener("keyup", onKeyUp);
   }
 
-  window.addEventListener("load", () => {
-    const keyBindings = {
-      left: "a",
-      up: "w",
-      right: "d",
-      down: "s",
-      jump: " ",
-    };
-    const controls = new Controls(keyBindings);
-    startKeyListeners(controls);
-
-    window.groundTile = document.images[0];
-    window.background = document.images[1];
-    window.mushroom = document.images[2];
-    window.playerSprite = document.images[3];
-
-    const canvasSize = { width: 256, height: 224 };
-    this.map = new WorldMap(canvasSize, controls);
-    document.querySelector("#pause-btn").addEventListener("click", pause);
-
-    play();
-  });
-
-  window.addEventListener("unload", () => {
-    stopKeyListeners();
-    document.querySelector("#pause-btn").removeEventListener("click", pause);
-  });
+  window.GROUND_TILE = document.images[0];
+  window.ITEMS = document.images[1];
+  window.BACKGROUND = document.images[2];
+  window.MUSHROOM = document.images[3];
+  window.PLAYER_SPRITE = document.images[4];
 
   return {
-    startKeyListeners,
-    stopKeyListeners,
+    end,
+    init,
+    pause,
+    play,
+    start,
   };
-}
+})();

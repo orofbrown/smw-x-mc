@@ -40,13 +40,13 @@
 
     <div style="display: none" id="image-dict">
       <img src="img/groundTile.png" />
+      <img src="img/items.png" />
       <img src="img/overworld.png" />
       <img src="img/superMushroom.png" />
       <img src="img/zombie.png" />
       <!--
       <img src="img/marioLuigiSpriteSheet.gif" />
       <img src="img/1upMushroom.png" />
-      <img src="img/items.png" />
       <img src="img/superZombie.png" />
       <img src="img/tiles.png" />
       <img src="img/zombieItems.png" />
@@ -61,7 +61,8 @@
     <script src="item.js"></script>
     <script src="camera.js"></script>
     <script src="player.js"></script>
-    <script src="worldmap.js"></script>
+    <script src="course.js"></script>
+    <script src="render.js"></script>
     <script src="index.js"></script>
     <script>
       FPS = 30;
@@ -70,8 +71,23 @@
       WORLD_HEIGHT = 432;
       WORLD_LENGTH = 512;
 
-      window.addEventListener("DOMContentLoaded", () => {
-        window.game = new Game();
+      window.addEventListener("load", () => {
+        const keyBindings = {
+          left: "a",
+          up: "w",
+          right: "d",
+          down: "s",
+          jump: " ",
+        };
+        Game.init(keyBindings);
+        Game.start();
+      });
+
+      window.addEventListener("unload", () => {
+        Game.end();
+        document
+          .querySelector("#pause-btn")
+          .removeEventListener("click", Game.pause);
       });
     </script>
   </body>
