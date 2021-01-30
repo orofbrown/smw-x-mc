@@ -47,7 +47,7 @@ function Player(startingWorldPos, controls, worldBounds) {
   this.FRAME_INC_X = Math.round(SPEED * STEP);
   this.FRAME_INC_Y = this.FRAME_INC_X * 0.5;
   this.MAX_JUMP_PRESS = 20;
-  this.JUMP_FORCE = 2;
+  this.JUMP_FORCE = 3;
   this.GRAVITY_FORCE = 3;
 
   this.airborneState = {
@@ -94,7 +94,7 @@ function Player(startingWorldPos, controls, worldBounds) {
 
 Player.prototype.update = function () {
   const { leftPress, upPress, rightPress, downPress, jumpPress } = this.ctrl;
-  console.log(leftPress, upPress, rightPress, downPress, jumpPress);
+
   // Sprite State
   let nextState = 0;
   if (leftPress) {
@@ -115,52 +115,16 @@ Player.prototype.update = function () {
   // TODO: eventually will be ducking sprite
   if (downPress) {
     nextState = 0b110;
-    this.y += this.FRAME_INC_X;
   }
   if (jumpPress && !this.isAirborne()) {
-    // TODO: make longer press = higher jump
     // and debounce double jump press
-    nextState = 0b010;
     this.airborneState.rising = true;
   }
   if (this.shouldResetSpriteState()) {
     nextState = this.resetSprite();
   }
 
-  // TODO: jump needs to be higher
-  // Airborne State
-  const DT = deltaTime * 2;
-  let decayAmt = DT / 500;
-  if (this.airborneState.rising) {
-    this.airborneState.jumpPressCount += deltaTime / 500;
-
-    if (jumpPress) {
-      this.airborneState.jumpForce += 0.1;
-      decayAmt = DT / 750;
-    }
-
-    nextState = 0b010;
-    this.y = Math.round(
-      this.y - this.airborneState.gravityDecay * this.airborneState.jumpForce
-    );
-
-    this.airborneState.gravityDecay -= decayAmt;
-
-    if (this.airborneState.gravityDecay <= 0) {
-      this.ctrl.jumpPress = false;
-      this.airborneState.falling = true;
-      this.airborneState.rising = false;
-      this.airborneState.gravityDecay += decayAmt;
-    }
-  } else if (this.airborneState.falling) {
-    this.airborneState.jumpForce = this.GRAVITY_FORCE;
-    decayAmt = (deltaTime * 2) / 500;
-    nextState = 0b110;
-    this.y += Math.round(
-      this.airborneState.gravityDecay * this.airborneState.jumpForce * 0.75
-    );
-    this.airborneState.gravityDecay += decayAmt;
-  }
+  nextState = this.jump(nextState, jumpPress);
 
   this.sprite.frameIdx =
     this.sprite.state !== nextState ? 0 : this.sprite.frameIdx;
@@ -182,7 +146,7 @@ Player.prototype.draw = function (ctx, camX, camY) {
   ctx.save();
 
   ctx.scale(this.sprite.direction, 1);
-  ctx.globalCompositeOperation = "source-over"; // player over top of everything
+  ctx.globalCompositeOperation = 'source-over'; // player over top of everything
   ctx.drawImage(
     this.sprite.img,
     frame.x,
@@ -192,7 +156,7 @@ Player.prototype.draw = function (ctx, camX, camY) {
     newX,
     newY,
     destWidth,
-    H
+    H,
   );
 
   ctx.restore();
@@ -244,7 +208,45 @@ Player.prototype.resetSprite = function () {
   return this.sprite.state;
 };
 
-Player.prototype.jump = function () {};
+Player.prototype.jump = function (animationState, jumpPress) {
+  // Airborne State
+  const DT = deltaTime * 2;
+  var decayAmt = DT / 500;
+  var nextState = animationState;
+
+  if (this.airborneState.rising) {
+    nextState = 0b010;
+    this.airborneState.jumpPressCount += deltaTime / 500;
+
+    if (jumpPress) {
+      this.airborneState.jumpForce += 0.1;
+      decayAmt = DT / 750;
+    }
+
+    this.y = Math.round(
+      this.y - this.airborneState.gravityDecay * this.airborneState.jumpForce,
+    );
+
+    this.airborneState.gravityDecay -= decayAmt;
+
+    if (this.airborneState.gravityDecay <= 0) {
+      this.ctrl.jumpPress = false;
+      this.airborneState.falling = true;
+      this.airborneState.rising = false;
+      this.airborneState.gravityDecay += decayAmt;
+    }
+  } else if (this.airborneState.falling) {
+    this.airborneState.jumpForce = this.GRAVITY_FORCE;
+    decayAmt = (deltaTime * 2) / 500;
+    nextState = 0b110;
+    this.y += Math.round(
+      this.airborneState.gravityDecay * this.airborneState.jumpForce * 0.75,
+    );
+    this.airborneState.gravityDecay += decayAmt;
+  }
+
+  return nextState;
+};
 
 function getSpriteFrames(bitMask) {
   let frames = [{ x: 0, y: 0 }];

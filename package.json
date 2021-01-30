@@ -1,0 +1,12 @@
+{
+  "name": "smw",
+  "version": "0.0.1",
+  "description": "Super Zombie World",
+  "main": "index.js",
+  "author": "Mike Young <michael.young.1124@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "server": "python3 -m http.server"
+  }
+}

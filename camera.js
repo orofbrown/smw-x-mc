@@ -101,7 +101,6 @@ function Camera(startingWorldPos, viewportSize, worldBounds) {
 
       this.cameraView.set(this.x, this.y);
       keepInsideWorld(worldRect);
-      console.log(this.cameraView);
     }
   };
 }
