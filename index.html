@@ -12,6 +12,7 @@
       canvas {
         image-rendering: pixelated;
         image-rendering: crisp-edges;
+        margin-bottom: 8px;
         zoom: 3;
       }
       .indent {
@@ -55,13 +56,19 @@
     </div>
     <div id="debug-box"></div>
 
+    <script src="lib/SAT.js"></script>
+    <script src="quadtree/quadtree.js"></script>
+    <script src="collision.js"></script>
+    <script src="entity.js"></script>
     <script src="utils.js"></script>
+    <script src="sprite.js"></script>
     <script src="animate.js"></script>
     <script src="controls.js"></script>
+    <script src="block.js"></script>
     <script src="item.js"></script>
     <script src="camera.js"></script>
     <script src="player.js"></script>
-    <script src="course.js"></script>
+    <script src="world.js"></script>
     <script src="render.js"></script>
     <script src="index.js"></script>
     <script>
@@ -71,23 +78,23 @@
       WORLD_HEIGHT = 432;
       WORLD_LENGTH = 512;
 
-      window.addEventListener("load", () => {
+      window.addEventListener('load', async () => {
         const keyBindings = {
-          left: "a",
-          up: "w",
-          right: "d",
-          down: "s",
-          jump: " ",
+          left: 'a',
+          up: 'w',
+          right: 'd',
+          down: 's',
+          jump: ' ',
         };
-        Game.init(keyBindings);
+        await Game.init(keyBindings);
         Game.start();
       });
 
-      window.addEventListener("unload", () => {
+      window.addEventListener('unload', () => {
         Game.end();
         document
-          .querySelector("#pause-btn")
-          .removeEventListener("click", Game.pause);
+          .querySelector('#pause-btn')
+          .removeEventListener('click', Game.pause);
       });
     </script>
   </body>

@@ -75,13 +75,9 @@ function Camera(startingWorldPos, viewportSize, worldBounds) {
         this.y = worldRect.bottom - this.cameraView.height;
       }
     }
-    document.querySelector("#cam-coords").innerText = `
+    document.querySelector('#cam-coords').innerText = `
     Camera VP: ${this.cameraView.left} ${this.cameraView.top} ${this.cameraView.right} ${this.cameraView.bottom}
     Camera XY: ${this.x} ${this.y}`;
-
-    document.querySelector(
-      "#world-coords"
-    ).innerText = `World: ${worldRect.left} ${worldRect.top} ${worldRect.right} ${worldRect.bottom}`;
   };
 
   this.follow = (obj, xDZ, yDZ) => {

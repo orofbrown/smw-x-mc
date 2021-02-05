@@ -40,14 +40,16 @@ const Y_PEAK = 50;
 
 */
 
-function Player(startingWorldPos, controls, worldBounds) {
+function Player(id, name, startingWorldPos, controls, worldBounds) {
+  this.name = name;
+  this.id = id;
   const { w, h } = worldBounds;
 
   // Rounding because float values make the sprite fuzzy
   this.FRAME_INC_X = Math.round(SPEED * STEP);
   this.FRAME_INC_Y = this.FRAME_INC_X * 0.5;
   this.MAX_JUMP_PRESS = 20;
-  this.JUMP_FORCE = 3;
+  this.JUMP_FORCE = 4.5;
   this.GRAVITY_FORCE = 3;
 
   this.airborneState = {
@@ -71,6 +73,9 @@ function Player(startingWorldPos, controls, worldBounds) {
   this.worldHeight = h;
   this.x = startingWorldPos.x;
   this.y = startingWorldPos.y;
+  // TODO: remove after inhertance is done
+  this.collider = new BoundingBox(new Point(this.x, this.y), Math.max(W, H));
+  this.collider.id = this.id;
 
   this.isAtLeftEdge = () => this.x - HALF_WIDTH < 0;
   this.isAtRightEdge = () => this.x + HALF_WIDTH > this.worldLength;
@@ -117,7 +122,6 @@ Player.prototype.update = function () {
     nextState = 0b110;
   }
   if (jumpPress && !this.isAirborne()) {
-    // and debounce double jump press
     this.airborneState.rising = true;
   }
   if (this.shouldResetSpriteState()) {
@@ -132,14 +136,49 @@ Player.prototype.update = function () {
   this.sprite.frames = getSpriteFrames(this.sprite.state);
 
   this.keepInWorld();
+
+  function getSpriteFrames(bitMask) {
+    let frames = [{ x: 0, y: 0 }];
+
+    switch (bitMask) {
+      case 2: // idle, jump, small
+      case 3: // same as 2 but Super
+      case 7: // same as 3
+        frames = [{ x: 0, y: 20 }];
+        break;
+      case 4: // walking, grounded, small
+      case 5: // same as 4 but Super
+        frames = [
+          { x: 20, y: 0 },
+          { x: 0, y: 0 },
+        ];
+        break;
+      case 6: // fall
+        frames = [{ x: 20, y: 20 }];
+        break;
+      case 1: // same as default  but Super
+      default:
+        break;
+    }
+
+    return frames;
+  }
 };
 
 Player.prototype.draw = function (ctx, camX, camY) {
+  document.querySelector(
+    '#player-coords',
+  ).innerText = `Player: ${this.x}, ${this.y}`;
+
   // Tying coords to camera coords prevents player from getting ahead of camera
   // Using width/height div by 2 keeps coords centered on sprite
   // Will also leave small space between player and world borders
   const newX = (this.x - HALF_WIDTH - camX) * this.sprite.direction;
   const newY = this.y - HALF_HEIGHT - camY;
+  // TODO: remove after inhertance is done
+  this.collider = new BoundingBox(new Point(this.x, this.y), Math.max(W, H));
+  this.collider.id = this.id;
+
   const destWidth = W * this.sprite.direction;
   const frame = this.sprite.frames[this.sprite.frameIdx];
 
@@ -247,30 +286,3 @@ Player.prototype.jump = function (animationState, jumpPress) {
 
   return nextState;
 };
-
-function getSpriteFrames(bitMask) {
-  let frames = [{ x: 0, y: 0 }];
-
-  switch (bitMask) {
-    case 2: // idle, jump, small
-    case 3: // same as 2 but Super
-    case 7: // same as 3
-      frames = [{ x: 0, y: 20 }];
-      break;
-    case 4: // walking, grounded, small
-    case 5: // same as 4 but Super
-      frames = [
-        { x: 20, y: 0 },
-        { x: 0, y: 0 },
-      ];
-      break;
-    case 6: // fall
-      frames = [{ x: 20, y: 20 }];
-      break;
-    case 1: // same as default  but Super
-    default:
-      break;
-  }
-
-  return frames;
-}

@@ -9,11 +9,11 @@ function coordsUtil(camera, player) {
   };
 
   document.querySelector(
-    "#cam-coords"
-  ).innerText = `Player: ${cam.x}, ${cam.y}`;
-  document.querySelector(
-    "#player-coords"
-  ).innerText = `Player: ${pla.x}, ${pla.y}`;
+    '#cam-coords',
+  ).innerText = `Camera: ${cam.x}, ${cam.y}`;
+  // document.querySelector(
+  //   '#player-coords',
+  // ).innerText = `Player: ${pla.x}, ${pla.y}`;
 }
 
 function log(params) {

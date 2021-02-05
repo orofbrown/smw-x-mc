@@ -8,5 +8,6 @@
   "private": false,
   "scripts": {
     "server": "python3 -m http.server"
-  }
+  },
+  "dependencies": {}
 }

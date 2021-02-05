@@ -1,17 +1,50 @@
-const Y_START = 182;
+function animateSprite(spriteObj) {
+  return setInterval(() => {
+    spriteObj.frameIdx = (spriteObj.frameIdx + 1) % spriteObj.frames.length;
+  }, spriteObj.interval);
+}
 
-function jump(ctx, sprite, x, curY) {
-  // const direction = curY > Y_PEAK ? 1 : -1;
-  // const time = new Date();
-  // const nextY = curY + 1 * direction;
-  // if (nextY < Y_START) {
-  //   ctx.restore();
-  //   return false;
-  // }
-  // ctx.save();
-  // log({ msg: "here", sprite });
-  // ctx.translate(x, nextY);
-  // ctx.drawImage(sprite, 0, 0);
-  // ctx.restore();
-  // return true;
+function drawSprite(
+  ctx,
+  spriteObj,
+  newX,
+  newY,
+  drawWidth,
+  drawHeight,
+  intervalId,
+) {
+  const destWidth = drawWidth * spriteObj.direction;
+  const frame = spriteObj.frames[spriteObj.frameIdx];
+  ctx.save();
+
+  ctx.scale(spriteObj.direction, 1);
+  ctx.drawImage(
+    spriteObj.img,
+    frame.x,
+    frame.y,
+    drawWidth,
+    drawHeight,
+    newX,
+    newY,
+    destWidth,
+    drawHeight,
+  );
+
+  ctx.restore();
+
+  if (intervalId < 0 && spriteObj.frames.length > 1) {
+    return animateSprite(spriteObj);
+  } else if (intervalId >= 0 && spriteObj.frames.length === 1) {
+    return resetSprite(spriteObj, intervalId);
+  }
+
+  return intervalId;
+}
+
+function resetSprite(spriteObj, intervalId) {
+  spriteObj.state = 0;
+  spriteObj.frameIdx = 0;
+  clearInterval(intervalId);
+
+  return intervald;
 }

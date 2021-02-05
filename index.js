@@ -20,39 +20,46 @@ var Game = (function () {
 
     renderer.update();
     await renderer.draw();
+
     if (!paused) {
       requestAnimationFrame(gameLoop);
     }
   }
 
-  function init(keyBindings) {
-    course = new Course(canvasSize, controls);
+  async function init(keyBindings) {
+    world = new World(canvasSize, controls);
     controls = new Controls(keyBindings);
     player = new Player(
+      await getIdHash('Player'),
+      'Player',
       { x: 96, y: WORLD_HEIGHT },
       controls,
       // TODO: subtracts magic value to keep player on ground until colliders are added
-      { w: WORLD_LENGTH, h: WORLD_HEIGHT - 32 }
+      { w: WORLD_LENGTH, h: WORLD_HEIGHT - 32 },
     );
     camera = new Camera({ x: 0, y: WORLD_HEIGHT }, canvasSize, {
       w: WORLD_LENGTH,
       h: WORLD_HEIGHT,
     });
     camera.follow(player, canvasSize.width / 2, canvasSize.height / 2);
+    entities = [new Block({ x: 196, y: WORLD_HEIGHT - 96 })];
 
     renderer = new Renderer(
-      canvasSize.width,
-      canvasSize.height,
-      course,
+      {
+        w: canvasSize.width,
+        h: canvasSize.height,
+      },
+      world,
       camera,
-      player
+      player,
     );
+    await renderer.setEntities(entities);
 
     startKeyListeners(controls);
   }
 
   function onKeyDown(ev, ctrl) {
-    if (ev.key === " " && ev.repeat) {
+    if (ev.key === ' ' && ev.repeat) {
       ctrl.jumpPress = false;
       return;
     }
@@ -67,10 +74,10 @@ var Game = (function () {
   function pause() {
     if (!paused) {
       paused = true;
-      document.querySelector("#pause-btn").innerText = "Play";
+      document.querySelector('#pause-btn').innerText = 'Play';
     } else {
       paused = false;
-      document.querySelector("#pause-btn").innerText = "Pause";
+      document.querySelector('#pause-btn').innerText = 'Pause';
       play();
     }
   }
@@ -81,19 +88,19 @@ var Game = (function () {
   }
 
   function start() {
-    document.querySelector("#pause-btn").addEventListener("click", pause);
+    document.querySelector('#pause-btn').addEventListener('click', pause);
 
     play();
   }
 
   function startKeyListeners(ctrl) {
-    document.addEventListener("keydown", (ev) => onKeyDown(ev, ctrl));
-    document.addEventListener("keyup", (ev) => onKeyUp(ev, ctrl));
+    document.addEventListener('keydown', (ev) => onKeyDown(ev, ctrl));
+    document.addEventListener('keyup', (ev) => onKeyUp(ev, ctrl));
   }
 
   function stopKeyListeners() {
-    document.removeEventListener("keydown", onKeyDown);
-    document.removeEventListener("keyup", onKeyUp);
+    document.removeEventListener('keydown', onKeyDown);
+    document.removeEventListener('keyup', onKeyUp);
   }
 
   window.GROUND_TILE = document.images[0];
