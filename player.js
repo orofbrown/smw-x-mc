@@ -1,10 +1,9 @@
-const SPEED = 50;
-const W = 20;
-// Dividing 2 Ints SHOULD come out to another Int,
-//  but rounding just in case I'm assuming incorrectly
-const HALF_WIDTH = Math.round(W / 2);
 const H = 20;
-const HALF_HEIGHT = Math.round(H / 2);
+const W = 20;
+// Will only come out to int value if it's an round number
+const HALF_HEIGHT = H / 2;
+const HALF_WIDTH = W / 2;
+const SPEED = 50;
 const Y_PEAK = 50;
 
 /*
@@ -40,9 +39,8 @@ const Y_PEAK = 50;
 
 */
 
-function Player(id, name, startingWorldPos, controls, worldBounds) {
-  this.name = name;
-  this.id = id;
+function Player(startingWorldPos, controls, worldBounds) {
+  Entity.call(this, startingWorldPos, 'Player', { w: W, h: H });
   const { w, h } = worldBounds;
 
   // Rounding because float values make the sprite fuzzy
@@ -74,8 +72,11 @@ function Player(id, name, startingWorldPos, controls, worldBounds) {
   this.x = startingWorldPos.x;
   this.y = startingWorldPos.y;
   // TODO: remove after inhertance is done
-  this.collider = new BoundingBox(new Point(this.x, this.y), Math.max(W, H));
-  this.collider.id = this.id;
+  this.collider = new BoundingBox(
+    this.id,
+    new Point(this.x, this.y),
+    Math.max(W, H),
+  );
 
   this.isAtLeftEdge = () => this.x - HALF_WIDTH < 0;
   this.isAtRightEdge = () => this.x + HALF_WIDTH > this.worldLength;
@@ -97,72 +98,18 @@ function Player(id, name, startingWorldPos, controls, worldBounds) {
     !this.isAirborne();
 }
 
-Player.prototype.update = function () {
-  const { leftPress, upPress, rightPress, downPress, jumpPress } = this.ctrl;
+Player.prototype = Object.create(Entity.prototype);
+Object.defineProperty(Entity.prototype, 'constructor', {
+  value: Player,
+  enumerable: false,
+  writable: true,
+});
 
-  // Sprite State
-  let nextState = 0;
-  if (leftPress) {
-    nextState = 0b100;
-    this.sprite.direction = -1;
-    this.x -= this.FRAME_INC_X;
-  }
-  if (rightPress) {
-    nextState = 0b100;
-    this.sprite.direction = 1;
-    this.x += this.FRAME_INC_X;
-  }
-  // TODO: eventually will be looking up sprite
-  if (upPress) {
-    nextState = 0b010;
-    this.y -= this.FRAME_INC_X;
-  }
-  // TODO: eventually will be ducking sprite
-  if (downPress) {
-    nextState = 0b110;
-  }
-  if (jumpPress && !this.isAirborne()) {
-    this.airborneState.rising = true;
-  }
-  if (this.shouldResetSpriteState()) {
-    nextState = this.resetSprite();
-  }
-
-  nextState = this.jump(nextState, jumpPress);
-
-  this.sprite.frameIdx =
-    this.sprite.state !== nextState ? 0 : this.sprite.frameIdx;
-  this.sprite.state = nextState;
-  this.sprite.frames = getSpriteFrames(this.sprite.state);
-
-  this.keepInWorld();
-
-  function getSpriteFrames(bitMask) {
-    let frames = [{ x: 0, y: 0 }];
-
-    switch (bitMask) {
-      case 2: // idle, jump, small
-      case 3: // same as 2 but Super
-      case 7: // same as 3
-        frames = [{ x: 0, y: 20 }];
-        break;
-      case 4: // walking, grounded, small
-      case 5: // same as 4 but Super
-        frames = [
-          { x: 20, y: 0 },
-          { x: 0, y: 0 },
-        ];
-        break;
-      case 6: // fall
-        frames = [{ x: 20, y: 20 }];
-        break;
-      case 1: // same as default  but Super
-      default:
-        break;
-    }
-
-    return frames;
-  }
+Player.prototype.animate = function () {
+  this.intervalId = setInterval(() => {
+    this.sprite.frameIdx =
+      (this.sprite.frameIdx + 1) % this.sprite.frames.length;
+  }, 100);
 };
 
 Player.prototype.draw = function (ctx, camX, camY) {
@@ -176,8 +123,11 @@ Player.prototype.draw = function (ctx, camX, camY) {
   const newX = (this.x - HALF_WIDTH - camX) * this.sprite.direction;
   const newY = this.y - HALF_HEIGHT - camY;
   // TODO: remove after inhertance is done
-  this.collider = new BoundingBox(new Point(this.x, this.y), Math.max(W, H));
-  this.collider.id = this.id;
+  this.collider = new BoundingBox(
+    this.id,
+    new Point(this.x, this.y),
+    Math.max(W, H),
+  );
 
   const destWidth = W * this.sprite.direction;
   const frame = this.sprite.frames[this.sprite.frameIdx];
@@ -207,44 +157,31 @@ Player.prototype.draw = function (ctx, camX, camY) {
   }
 };
 
-Player.prototype.animate = function () {
-  this.intervalId = setInterval(() => {
-    this.sprite.frameIdx =
-      (this.sprite.frameIdx + 1) % this.sprite.frames.length;
-  }, 100);
-};
+Player.prototype.getSpriteFrames = function getSpriteFrames(state) {
+  let frames = [{ x: 0, y: 0 }];
 
-Player.prototype.keepInWorld = function () {
-  // TODO: let player go off screen top
-  if (this.isAtLeftEdge()) {
-    this.x = HALF_WIDTH;
-    this.resetSprite();
+  switch (state) {
+    case 2: // idle, jump, small
+    case 3: // same as 2 but Super
+    case 7: // same as 3
+      frames = [{ x: 0, y: 20 }];
+      break;
+    case 4: // walking, grounded, small
+    case 5: // same as 4 but Super
+      frames = [
+        { x: 20, y: 0 },
+        { x: 0, y: 0 },
+      ];
+      break;
+    case 6: // fall
+      frames = [{ x: 20, y: 20 }];
+      break;
+    case 1: // same as default  but Super
+    default:
+      break;
   }
-  if (this.isAtRightEdge()) {
-    this.x = this.worldLength - HALF_WIDTH;
-    this.resetSprite();
-  }
-  if (this.isAtCeiling()) {
-    // Ceiling bc y = 0 is at top of world
-    this.y = HALF_HEIGHT;
-  }
-  if (this.isOnGround()) {
-    // Ground bc y = 0 is at top of world
-    this.y = this.worldHeight - HALF_HEIGHT;
-    this.airborneState.falling = false;
-    this.airborneState.jumpForce = this.JUMP_FORCE;
-    this.airborneState.gravityDecay = this.FRAME_INC_Y;
-    this.airborneState.jumpPressCount = 0;
-  }
-};
 
-Player.prototype.resetSprite = function () {
-  this.sprite.state = 0;
-  this.sprite.frameIdx = 0;
-  clearInterval(this.intervalId);
-  this.intervalId = -1;
-
-  return this.sprite.state;
+  return frames;
 };
 
 Player.prototype.jump = function (animationState, jumpPress) {
@@ -285,4 +222,78 @@ Player.prototype.jump = function (animationState, jumpPress) {
   }
 
   return nextState;
+};
+
+Player.prototype.keepInWorld = function () {
+  // TODO: let player go off screen top
+  if (this.isAtLeftEdge()) {
+    this.x = HALF_WIDTH;
+    this.resetSprite();
+  }
+  if (this.isAtRightEdge()) {
+    this.x = this.worldLength - HALF_WIDTH;
+    this.resetSprite();
+  }
+  if (this.isAtCeiling()) {
+    // Ceiling bc y = 0 is at top of world
+    this.y = HALF_HEIGHT;
+  }
+  if (this.isOnGround()) {
+    // Ground bc y = 0 is at top of world
+    this.y = this.worldHeight - HALF_HEIGHT;
+    this.airborneState.falling = false;
+    this.airborneState.jumpForce = this.JUMP_FORCE;
+    this.airborneState.gravityDecay = this.FRAME_INC_Y;
+    this.airborneState.jumpPressCount = 0;
+  }
+};
+
+Player.prototype.resetSprite = function () {
+  this.sprite.state = 0;
+  this.sprite.frameIdx = 0;
+  clearInterval(this.intervalId);
+  this.intervalId = -1;
+
+  return this.sprite.state;
+};
+
+Player.prototype.update = function () {
+  const { leftPress, upPress, rightPress, downPress, jumpPress } = this.ctrl;
+
+  // Sprite State
+  let nextState = 0;
+  if (leftPress) {
+    nextState = 0b100;
+    this.sprite.direction = -1;
+    this.x -= this.FRAME_INC_X;
+  }
+  if (rightPress) {
+    nextState = 0b100;
+    this.sprite.direction = 1;
+    this.x += this.FRAME_INC_X;
+  }
+  // TODO: eventually will be looking up sprite
+  if (upPress) {
+    nextState = 0b010;
+    this.y -= this.FRAME_INC_X;
+  }
+  // TODO: eventually will be ducking sprite
+  if (downPress) {
+    nextState = 0b110;
+  }
+  if (jumpPress && !this.isAirborne()) {
+    this.airborneState.rising = true;
+  }
+  if (this.shouldResetSpriteState()) {
+    nextState = this.resetSprite();
+  }
+
+  nextState = this.jump(nextState, jumpPress);
+
+  this.sprite.frameIdx =
+    this.sprite.state !== nextState ? 0 : this.sprite.frameIdx;
+  this.sprite.state = nextState;
+  this.sprite.frames = this.getSpriteFrames(this.sprite.state);
+
+  this.keepInWorld();
 };

@@ -5,12 +5,17 @@ const BlockState = {
 };
 
 function Block(coords) {
+  Entity.call(this, coords, 'Block', BLOCK_SIZE_PX);
+
   this.name = 'Question Block';
   this.x = coords.x;
   this.y = coords.y;
-  this.collider = new BoundingBox(new Point(this.x, this.y), BLOCK_SIZE_PX);
+  this.collider = new BoundingBox(new Point(this.x, this.y), {
+    w: BLOCK_SIZE_PX,
+    h: BLOCK_SIZE_PX,
+  });
 
-  const frames = getSpriteFrames(BlockState.Full);
+  const frames = this.getSpriteFrames(BlockState.Full);
   this.sprite = new Sprite(ITEMS, 175, frames);
   this.intervalId = -1;
 
@@ -27,15 +32,22 @@ function Block(coords) {
     );
     ctx.restore();
   };
-
-  function getSpriteFrames(state) {
-    return state === BlockState.Full
-      ? [
-          { x: 84, y: 26 },
-          { x: 103, y: 26 },
-          { x: 84, y: 46 },
-          { x: 103, y: 46 },
-        ]
-      : [{ x: 82, y: 66 }];
-  }
 }
+
+Block.prototype = Object.create(Entity.prototype);
+Object.defineProperty(Entity.prototype, 'constructor', {
+  value: Block,
+  enumerable: false,
+  writable: true,
+});
+
+Block.prototype.getSpriteFrames = function (state) {
+  return state === BlockState.Full
+    ? [
+        { x: 84, y: 26 },
+        { x: 103, y: 26 },
+        { x: 84, y: 46 },
+        { x: 103, y: 46 },
+      ]
+    : [{ x: 82, y: 66 }];
+};

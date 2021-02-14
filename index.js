@@ -30,8 +30,6 @@ var Game = (function () {
     world = new World(canvasSize, controls);
     controls = new Controls(keyBindings);
     player = new Player(
-      await getIdHash('Player'),
-      'Player',
       { x: 96, y: WORLD_HEIGHT },
       controls,
       // TODO: subtracts magic value to keep player on ground until colliders are added
@@ -52,8 +50,8 @@ var Game = (function () {
       world,
       camera,
       player,
+      entities,
     );
-    await renderer.setEntities(entities);
 
     startKeyListeners(controls);
   }

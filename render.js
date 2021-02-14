@@ -1,4 +1,4 @@
-function Renderer(vb, world, camera, player) {
+function Renderer(vb, world, camera, player, collidableEntities) {
   this.context = document.querySelector('canvas').getContext('2d');
   this.world = world;
   this.camera = camera;
@@ -6,25 +6,12 @@ function Renderer(vb, world, camera, player) {
   this.viewWidth = vb.w;
   this.viewHeight = vb.h;
   this.quadTree = new QuadTree(0, 0, 0, 256);
-  this.entities = [];
+  this.entities = collidableEntities;
+  this.entities.push(player);
 
   const _activeCollisions = []; // colliable entities in current view
   const _realCollisions = []; // known collisions
 }
-
-Renderer.prototype.setEntities = async function setEntitites(
-  collidableEntities,
-) {
-  this.entities = await Promise.all(
-    collidableEntities.map(async (e) => {
-      // TODO: remove once all entities inherit from Entity class
-      e.id = await getIdHash(e.name);
-      e.collider.id = e.id;
-      return e;
-    }),
-  );
-  this.entities.push(this.player);
-};
 
 Renderer.prototype.draw = async function draw() {
   this.context.clearRect(0, 0, this.viewWidth, this.viewHeight);

@@ -4,25 +4,9 @@ function EntityStateEnum() {
   };
 }
 
-async function getIdHash(entityName) {
-  let hexString;
-  const timeStamp = new Date().getTime();
-  if (crypto.subtle) {
-    const uint8Arr = new TextEncoder().encode(entityName + timeStamp);
-    const hashed = await crypto.subtle.digest('SHA-1', uint8Arr);
-    const byteArray = Array.from(new Uint8Array(hashed));
-    hexString = byteArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-  } else {
-    const hash = crypto.createHash('sha1');
-    hash.update(entityName + timeStamp);
-    hexString = hash.digest('hex');
-  }
-
-  return hexString.slice(0, 8);
-}
-
 function Entity(coords, name, size) {
-  this.id = getIdHash();
+  // V8 crypto function is async and that's annoying here
+  this.id = Math.round(Math.random() * 10 ** 8);
   this.name = name;
   this.x = coords.x;
   this.y = coords.y;
@@ -30,7 +14,7 @@ function Entity(coords, name, size) {
   this.h = size.h;
   this.intervalId = -1;
 
-  this.collider = new BoundingBox(new Point(this.x, this.y), this.w);
+  this.collider = new BoundingBox(this.id, new Point(this.x, this.y), this.w);
 
   const frames = this.getSpriteFrames(EntityStateEnum.Idle);
   this.sprite = new Sprite(ITEMS, 175, frames);
@@ -39,7 +23,7 @@ function Entity(coords, name, size) {
 Entity.prototype.draw = function (ctx, camX, camY) {
   ctx.save();
 
-  this.collider = new BoundingBox(new Point(this.x, this.y), this.w);
+  this.collider = new BoundingBox(this.id, new Point(this.x, this.y), this.w);
   this.intervalId = drawSprite(
     ctx,
     this.sprite,
@@ -53,6 +37,10 @@ Entity.prototype.draw = function (ctx, camX, camY) {
   ctx.restore();
 };
 
-Entity.prototype.getSpriteFrames = function () {};
+Entity.prototype.getSpriteFrames = function () {
+  throw new Error('Entity.getSpriteFrames not implemented');
+};
 
-Entity.prototype.update = function () {};
+Entity.prototype.update = function () {
+  throw new Error('Entity.update not implemented');
+};

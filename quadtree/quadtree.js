@@ -12,9 +12,11 @@ function Point(x, y) {
 }
 
 // Square, so only one dimension needed to measure size
-function BoundingBox(nwCorner, w) {
+function BoundingBox(entityId, nwCorner, w) {
+  // entityId: number
   // nwCorner: Point
   // width: number
+  this.id = entityId;
   this.nwCorner = nwCorner;
   this.width = w;
 }
