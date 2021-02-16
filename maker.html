@@ -1,0 +1,222 @@
+<html>
+  <head>
+    <style>
+      body {
+        background-color: rgb(175, 238, 235);
+        margin: 0;
+        width: 1330px;
+      }
+
+      header {
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.25);
+        border-bottom: 3px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0px 4px 8px 4px rgb(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: row;
+        height: 100px;
+        padding: 8px 0 16px 8px;
+        width: 100%;
+      }
+
+      .side-bars {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .item {
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0px 8px 4px 0px rgb(0 0 0 / 15%);
+        border-top: 8px solid #2ed0fd;
+        box-sizing: border-box;
+        display: flex;
+        margin: 16px 10px 0;
+        height: 72px;
+        width: 72px;
+      }
+      .item:last-child {
+        border-top: none;
+      }
+      .item:nth-child(2) {
+        border-top-color: #fef439;
+      }
+      .item:nth-child(n + 6) {
+        border-top-color: #6bf032;
+      }
+      .item:nth-child(n + 10) {
+        border-top-color: #f56ef5;
+      }
+
+      /*
+       * #6bf032
+       * #fef439
+       * #f56ef5
+       */
+      .sound-switcher {
+        background-color: #fff;
+        border-radius: 100%;
+        box-shadow: 0px 10px 3px -1px rgb(0 0 0 / 15%);
+        height: 80px;
+        margin: 16px;
+        margin-bottom: 0px;
+        width: 72px;
+      }
+
+      .left-side {
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.25);
+        border: 3px solid rgba(255, 255, 255, 0.5);
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 4px 0px 8px 4px rgb(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        justify-content: space-evenly;
+        margin-top: 8px;
+        padding-top: 8px;
+        width: 200px;
+      }
+
+      .picker {
+        background-color: #fff;
+        border: 4px solid #fff;
+        border-radius: 6px;
+        box-sizing: border-box;
+        box-shadow: 0px 3px 3px 4px rgb(0 0 0 / 15%);
+        display: flex;
+        height: 80px;
+        margin: 4px 4px 4px 10px;
+        width: 85%;
+      }
+      .picker:first-child {
+        background-color: #93fefd;
+      }
+
+      .picker-small {
+        display: flex;
+        flex-direction: row;
+        padding: 0;
+        width: 85%;
+      }
+      .picker-small section {
+        flex: 1;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0px 2px 3px 3px rgb(0 0 0 / 15%);
+        display: flex;
+        height: 70px;
+        margin: 8px 0 8px 4px;
+        width: 70px;
+      }
+      .picker-small section + section {
+        border-radius: 100%;
+        margin-left: 16px;
+      }
+
+      .left-side > footer {
+        background-color: rgba(255, 255, 255, 0.75);
+        height: 80px;
+        margin-top: 12px;
+        width: 100%;
+      }
+
+      .right-side {
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.25);
+        border: 3px solid rgba(255, 255, 255, 0.5);
+        border-right: none;
+        border-bottom: none;
+        border-radius: 8px 0 0;
+        box-shadow: -2px 0px 8px 4px rgb(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        height: 750px;
+        justify-content: space-between;
+        margin-top: 8px;
+        padding-top: 8px;
+        width: 125px;
+        position: relative;
+        right: 0;
+      }
+
+      .menu-item {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0px 8px 4px 0px rgb(0 0 0 / 15%);
+        box-sizing: border-box;
+        display: flex;
+        margin: 32px 10px 0;
+        height: 72px;
+        width: 76px;
+      }
+      .menu-item:first-child {
+        background-color: #fccf31;
+        border: 4px solid #fff;
+      }
+
+      .erase-btns {
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0px 8px 4px 0px rgb(0 0 0 / 15%);
+        display: flex;
+        margin: 0 10px 32px 10px;
+        height: 72px;
+        width: 76px;
+      }
+      .erase-btns:first-child {
+        border-radius: 100%;
+        height: 76px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <section class="sound-switcher"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+        <section class="item"></section>
+      </header>
+      <section class="side-bars">
+        <aside class="left-side">
+          <section class="picker"></section>
+          <section class="picker-small">
+            <section></section>
+            <section></section>
+          </section>
+          <section class="picker-small">
+            <section></section>
+            <section></section>
+          </section>
+          <section class="picker"></section>
+          <section class="picker"></section>
+          <footer></footer>
+        </aside>
+        <aside class="right-side">
+          <section class="top-section">
+            <section class="menu-item"></section>
+            <section class="menu-item"></section>
+          </section>
+          <section class="bottom-section">
+            <section class="erase-btns"></section>
+            <section class="erase-btns"></section>
+            <section class="erase-btns"></section>
+          </section>
+        </aside>
+      </section>
+    </main>
+    <script></script>
+  </body>
+</html>
